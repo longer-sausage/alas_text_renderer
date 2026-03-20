@@ -1,18 +1,27 @@
+# Alas_ocr用text_renderer
+
 # Text Renderer
 Generate text line images for training deep learning OCR model (e.g. [CRNN](https://github.com/bgshih/crnn)). ![example](./image/example.gif)
 
 ## Table of Contents
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Run Example](#run-example)
-- [Quick Start](#quick-start)
-- [Using Albumentations Effects](#using-albumentations-effects)
-- [All Effect/Layout Examples](#all-effectlayout-examples)
-- [Contribution](#contribution)
-- [Font Viewer](#font-viewer)
-- [Build docs](#build-docs)
-- [Citing text_renderer](#citing-text_renderer)
+- [Alas\_ocr用text\_renderer](#alas_ocr用text_renderer)
+- [Text Renderer](#text-renderer)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Run Example](#run-example)
+  - [Quick Start](#quick-start)
+    - [Prepare file resources](#prepare-file-resources)
+    - [Create config file](#create-config-file)
+    - [Run](#run)
+  - [Using Albumentations Effects](#using-albumentations-effects)
+    - [Example Usage](#example-usage)
+  - [All Effect/Layout Examples](#all-effectlayout-examples)
+  - [Contribution](#contribution)
+  - [Font Viewer](#font-viewer)
+  - [Build docs](#build-docs)
+  - [Citing text\_renderer](#citing-text_renderer)
 
 ## Features
 
