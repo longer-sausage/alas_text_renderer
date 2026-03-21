@@ -3,90 +3,118 @@ import numpy as np
 import os
 from pathlib import Path
 import random
+from tqdm import tqdm
 
 CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
 
 
-def get_orange_color():
-    r = random.randint(200, 255)
-    g = random.randint(100, 160)
-    b = random.randint(0, 50)
-    return r, g, b
+def get_gray_color(base_min=50, base_max=200, delta=10):
+    """生成一个灰度值"""
+    base = random.randint(base_min, base_max)
+    gray = np.clip(base + random.randint(-delta, delta), 0, 255)
+    return int(gray)
 
 
-def get_blue_color():
-    r = random.randint(0, 50)
-    g = random.randint(0, 100)
-    b = random.randint(200, 255)
-    return r, g, b
+def get_white_color(base_min=220, base_max=255, delta=10):
+    """生成一个近白色的灰度值"""
+    return get_gray_color(base_min, base_max, delta)
 
 
-def get_gray_color():
-    base = random.randint(50, 200)
-    r = np.clip(base + random.randint(-10, 10), 0, 255)
-    g = np.clip(base + random.randint(-10, 10), 0, 255)
-    b = np.clip(base + random.randint(-10, 10), 0, 255)
-    return int(r), int(g), int(b)
+def add_long_lines(img):
+    """在图片上随机添加大部分贯穿整个图像的长线条"""
+    if random.random() < 0.8:
+        return
+
+    h, w = img.shape[:2]
+    num_lines = random.randint(2, 5)
+    for _ in range(num_lines):
+        # 通过定义一个长向量来创建长线条
+        diag = np.sqrt(h**2 + w**2)
+        length = diag * random.uniform(0.8, 1.5)
+
+        # 中心点可以在图像内或略微超出
+        cx = random.randint(0, w)
+        cy = random.randint(0, h)
+
+        angle = np.deg2rad(random.uniform(0, 360))
+
+        x1 = int(cx - length * np.cos(angle))
+        y1 = int(cy - length * np.sin(angle))
+        x2 = int(cx + length * np.cos(angle))
+        y2 = int(cy + length * np.sin(angle))
+
+        color = (get_gray_color(100, 200),) * 3
+        thickness = random.randint(1, 2)
+
+        # cv2.line 可以正确处理超出图像边界的端点
+        cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
 
-def get_white_color():
-    base = random.randint(230, 245)
-    r = np.clip(base + random.randint(-10, 10), 0, 255)
-    g = np.clip(base + random.randint(-10, 10), 0, 255)
-    b = np.clip(base + random.randint(-10, 10), 0, 255)
-    return int(r), int(g), int(b)
+def add_shadow_effect(img):
+    """在图片上随机添加阴影效果"""
+    if random.random() < 0.7:
+        return
+
+    h, w = img.shape[:2]
+
+    # 创建一个黑色的遮罩
+    overlay = np.zeros_like(img, dtype=np.float32)
+
+    num_shapes = random.randint(2, 4)
+    for _ in range(num_shapes):
+        cx, cy = random.randint(0, w), random.randint(0, h)
+        major_axis = random.randint(w // 3, w)
+        minor_axis = random.randint(h // 3, h)
+        angle = random.randint(0, 90)
+
+        # 在遮罩上画一个白色的椭圆
+        color = (255, 255, 255)
+
+        cv2.ellipse(
+            overlay, (cx, cy), (major_axis, minor_axis), angle, 0, 360, color, -1
+        )
+
+    # 对遮罩进行高斯模糊，以柔化阴影边缘
+    kernel_size = int(max(w, h) * random.uniform(0.4, 0.8))
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    if kernel_size > 1:
+        overlay = cv2.GaussianBlur(overlay, (kernel_size, kernel_size), 0)
+
+    # 将遮罩（现在是模糊的白色形状）从原图上减去，形成阴影
+    # 通过调整 alpha 控制阴影的强度
+    alpha = random.uniform(0.15, 0.45)
+    shadow = (overlay * alpha).astype(np.uint8)
+
+    img[:] = cv2.subtract(img, shadow)
 
 
-def get_random_color():
-    r = random.randint(0, 255)
-    g = random.randint(0, 255)
-    b = random.randint(0, 255)
-    return r, g, b
-
-
-def generate(num_images=100, save_dir=CURRENT_DIR / "output", width=600, height=64):
+def generate(
+    num_images,
+    save_dir=CURRENT_DIR / "output",
+    width=2000,
+    height=100
+):
     os.makedirs(save_dir, exist_ok=True)
 
-    color_generators = [
-        get_orange_color,
-        get_blue_color,
-        get_gray_color,
-        get_white_color,
-        get_random_color,
-    ]
+    for i in tqdm(range(num_images), desc="Generating background images"):
+        # 1. 创建一个基本纯白的背景
+        bg_color = (get_white_color(),) * 3
+        img = np.full((height, width, 3), bg_color, dtype=np.uint8)
 
-    gen_list = []
-    num_per_cat = num_images // len(color_generators)
-    for i in range(len(color_generators)):
-        gen_list.extend([color_generators[i]] * num_per_cat)
+        # 2. 添加阴影效果
+        add_shadow_effect(img)
 
-    # Add remaining images
-    remaining = num_images - len(gen_list)
-    for i in range(remaining):
-        gen_list.append(random.choice(color_generators))
-
-    random.shuffle(gen_list)
-
-    for i in range(num_images):
-        color_gen = gen_list[i]
-        r, g, b = color_gen()
-
-        # OpenCV 默认使用 BGR 通道顺序
-        img = np.full((height, width, 3), (b, g, r), dtype=np.uint8)
-
-        # 深色背景上的噪点如果波动太大容易失真，这里稍微控制一下噪点强度
-        sigma = random.randint(15, 30)
-        noise = np.random.normal(0, sigma, img.shape)
-
-        # 叠加并保存
-        noisy_img = img + noise
-        noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
+        # 3. 添加长线条
+        add_long_lines(img)
 
         save_path = os.path.join(save_dir, f"bg_{i:04d}.jpg")
-        cv2.imwrite(save_path, noisy_img)
+        cv2.imwrite(save_path, img)
 
     print(f"成功生成 {num_images} 张背景图，保存在 {save_dir}！")
 
 
 if __name__ == "__main__":
-    generate(num_images=500)
+    output_dir = CURRENT_DIR / "output"
+    generate(500)
