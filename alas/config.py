@@ -3,7 +3,7 @@ from pathlib import Path
 
 from text_renderer.config import GeneratorCfg, RenderCfg, RangeTextColorCfg
 from text_renderer.corpus import EnumCorpus, EnumCorpusCfg
-from text_renderer.effect import Effects, DropoutRand, DropoutEdge
+from text_renderer.effect import Effects, DropoutRand
 
 ALAS_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -42,7 +42,6 @@ def get_config(num_image, dir):
             ),
             corpus_effects=Effects(
                 [
-                    DropoutEdge(p=1.0, dropout_p=(0.3, 0.5), iterations=1),
                     DropoutRand(p=0.3, dropout_p=(0.01, 0.05))
                 ]
             )

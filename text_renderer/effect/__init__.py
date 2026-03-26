@@ -24,7 +24,6 @@ from .base_effect import Effect, Effects, NoEffects
 from .dropout_horizontal import DropoutHorizontal
 from .dropout_rand import DropoutRand
 from .dropout_vertical import DropoutVertical
-from .dropout_edge import DropoutEdge
 from .line import Line
 from .padding import Padding
 from .selector import OneOf
@@ -39,7 +38,6 @@ __all__ = [
     "DropoutRand",
     "DropoutHorizontal",
     "DropoutVertical",
-    "DropoutEdge",
     "Line",
     "Padding",
     "TextBorder",
