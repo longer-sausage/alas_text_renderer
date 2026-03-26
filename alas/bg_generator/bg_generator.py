@@ -7,7 +7,6 @@ from tqdm import tqdm
 
 CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
 
-
 def get_gray_color(base_min=50, base_max=200, delta=10):
     """生成一个灰度值"""
     base = random.randint(base_min, base_max)
@@ -22,7 +21,7 @@ def get_white_color(base_min=220, base_max=255, delta=10):
 
 def add_long_lines(img):
     """在图片上随机添加大部分贯穿整个图像的长线条"""
-    if random.random() < 0.8:
+    if random.random() < 0.4:
         return
 
     h, w = img.shape[:2]
@@ -52,7 +51,7 @@ def add_long_lines(img):
 
 def add_shadow_effect(img):
     """在图片上随机添加阴影效果"""
-    if random.random() < 0.7:
+    if random.random() < 0.6:
         return
 
     h, w = img.shape[:2]
@@ -93,7 +92,7 @@ def add_shadow_effect(img):
 def generate(
     num_images,
     save_dir=CURRENT_DIR / "output",
-    width=2000,
+    width=600,
     height=100
 ):
     os.makedirs(save_dir, exist_ok=True)
